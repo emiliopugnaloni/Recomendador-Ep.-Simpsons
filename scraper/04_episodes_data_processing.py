@@ -11,12 +11,12 @@
 import pandas as pd
 
 #Leemos dataset con info episodios (wikisimpsons) y datos de #reviews y puntaje (nohomers)
-episodes = pd.read_csv('03_episodes_data.csv', sep='|')  
+episodes = pd.read_csv('scraper/03_episodes_data.csv', sep='|')  
 
 # === Agregado de Columnas === #
 
 #Nos quedamos solo con los que tienen Reviews
-episodes_with_reviews = pd.read_csv('reviews.csv', sep='|').episode_name.unique()
+episodes_with_reviews = pd.read_csv('scraper/reviews.csv', sep='|').episode_name.unique()
 episodes = episodes[episodes.episode_name_wikisimpsons.isin(episodes_with_reviews)].sort_values('episode_number', ascending=True)
 print(episodes.shape)
 
@@ -30,22 +30,22 @@ episodes['rating'] = round((episodes['1/5_votes'] + 2*episodes['2/5_votes'] + 3*
 # Contamos la cantidad de directores. Nos quedamos con quienes aparecen mas de 10 veces
 directors_occurences = episodes.directed_by.str.split('|').explode().value_counts()
 directors = directors_occurences[directors_occurences > 10].index.values
-directors = [director.strip().replace(' ', '_') for director in directors]
+directors = ['dir_' + director.strip().replace(' ', '_') for director in directors]
 
 # Agregamos variables dummies si el director parece en el episodio
 for director in directors:
-    episodes[director] = episodes.directed_by.apply(lambda x: director in x)
+    episodes[director] = episodes.directed_by.apply(lambda x: int(director in x))
     
  # === Escritores === #   
 
 # Contamos la cantidad de escritores. Nos quedamos con quienres aparecen mas de 10 veces
 writters_occurences = episodes.written_by.str.split('|').explode().value_counts()
 writters = writters_occurences[writters_occurences > 10].index.values
-writters = [writter.strip().replace(' ', '_') for writter in writters]
+writters = ['wrt_'+ writter.strip().replace(' ', '_') for writter in writters]
 
 # Agregamos variables dummies si el escritor aparece en el episodio
 for writter in writters:
-    episodes[writter] = episodes.written_by.apply(lambda x: writter in x)
+    episodes[writter] = episodes.written_by.apply(lambda x: int(writter in x))
 
 
 # === Personajes === #
@@ -53,13 +53,19 @@ for writter in writters:
 # Contamos la cantidad de personajes. Nos quedamos con quienres aparecen mas de 10 veces
 characters_occurences = episodes.characters.str.split('|').explode().value_counts()
 characters = characters_occurences[characters_occurences > 20].index.values
-characters = [characters.strip().replace(' ', '_') for characters in characters]
+characters = ['chr_' + characters.strip().replace(' ', '_') for characters in characters]
 
 # Agregamos variables dummies si el personaje aparece en el episodio
 for character in characters:
-    episodes[character] = episodes.directed_by.apply(lambda x: character in x)
+    episodes[character] = episodes.directed_by.apply(lambda x: int(character in x))
     
-
+    
+# === Temporadas === #
+#Create dummies for cutpoints 0,5,10,15,20,25,30,35
+#episodes['season'] =
+episodes['season_bins'] = pd.cut(episodes['episode_season'], bins=[0,5,10,15,20,25,30,35], labels=['seas_0_4', 'seas_5_9', 'seas_10_14', 'seas_15_19', 'seas_20_24', 'seas_25_29', 'seas_30_35'], right=False)
+episodes = pd.get_dummies(episodes, columns=['season_bins'], drop_first=True, dtype='int')
+    
 # === Eliminamos Columnas Inesesarias === #
 
 episodes.drop(columns=['1/5_votes', '2/5_votes', '3/5_votes', '4/5_votes', '5/5_votes', 'rating_1_to_10', 'votes_details_fl'], inplace=True) #calculadas
@@ -73,4 +79,4 @@ print(episodes.shape)
 episodes.head()
 
 # === Guardamos Dataset === #
-episodes.to_csv("episodes.csv", index=False, sep='|')  
+episodes.to_csv("scraper/episodes.csv", index=False, sep='|')  
