@@ -9,7 +9,7 @@ csv_files = [
 ]
 
 # SQLite database name
-db_name = 'the_simpsons_tables.db'
+db_name = 'data.db'
 
 # Create SQLite connection
 conn = sqlite3.connect(db_name)

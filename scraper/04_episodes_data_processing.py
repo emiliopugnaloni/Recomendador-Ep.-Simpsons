@@ -58,13 +58,16 @@ characters = ['chr_' + characters.strip().replace(' ', '_') for characters in ch
 # Agregamos variables dummies si el personaje aparece en el episodio
 for character in characters:
     episodes[character] = episodes.directed_by.apply(lambda x: int(character in x))
-    
-    
+
+episodes.columns
+   
 # === Temporadas === #
 #Create dummies for cutpoints 0,5,10,15,20,25,30,35
 #episodes['season'] =
-episodes['season_bins'] = pd.cut(episodes['episode_season'], bins=[0,5,10,15,20,25,30,35], labels=['seas_0_4', 'seas_5_9', 'seas_10_14', 'seas_15_19', 'seas_20_24', 'seas_25_29', 'seas_30_35'], right=False)
-episodes = pd.get_dummies(episodes, columns=['season_bins'], drop_first=True, dtype='int')
+episodes['season_bin'] = pd.cut(episodes['episode_season'], bins=[0,5,10,15,20,25,30,35], labels=['0_4', '5_9', '10_14', '15_19', '20_24', '25_29', '30_35'], right=False)
+episodes = pd.get_dummies(episodes, columns=['season_bin'], drop_first=False, dtype='int')
+episodes['season_bin'] = pd.cut(episodes['episode_season'], bins=[0,5,10,15,20,25,30,35], labels=['0_4', '5_9', '10_14', '15_19', '20_24', '25_29', '30_35'], right=False)
+
     
 # === Eliminamos Columnas Inesesarias === #
 
