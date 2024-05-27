@@ -20,6 +20,12 @@ episodes_with_reviews = pd.read_csv('scraper/reviews.csv', sep='|').episode_name
 episodes = episodes[episodes.episode_name_wikisimpsons.isin(episodes_with_reviews)].sort_values('episode_number', ascending=True)
 print(episodes.shape)
 
+# === Corregimos data_types === #
+episodes['episode_season'] = episodes['episode_season'].astype(int)
+
+# === Juntamos Imagenes (galeria con chapter)=== #
+episodes['gallery_images'] = episodes['chapter_image'] +'|' + episodes['gallery_images']
+
 # Calculamos algunas columnas
 episodes['q_votes'] = episodes['1/5_votes'] + episodes['2/5_votes'] + episodes['3/5_votes'] + episodes['4/5_votes'] + episodes['5/5_votes']
 episodes['rating'] = round((episodes['1/5_votes'] + 2*episodes['2/5_votes'] + 3*episodes['3/5_votes'] + 4*episodes['4/5_votes'] + 5*episodes['5/5_votes'])/episodes['q_votes'],2)
@@ -73,7 +79,7 @@ episodes['season_bin'] = pd.cut(episodes['episode_season'], bins=[0,5,10,15,20,2
 
 episodes.drop(columns=['1/5_votes', '2/5_votes', '3/5_votes', '4/5_votes', '5/5_votes', 'rating_1_to_10', 'votes_details_fl'], inplace=True) #calculadas
 episodes.drop(['episode_name_nohomers', 'episode_link_nohomers', 'episode_link_wikisimpsons'], axis=1, inplace=True) #usadas para joins y scappers
-episodes.drop(['written_by', 'directed_by', 'characters'], axis=1, inplace=True) #usadas para dummies
+episodes.drop(['characters'], axis=1, inplace=True) #usadas para dummies
 
 
 # ==== Renombramos Columnas ==== #

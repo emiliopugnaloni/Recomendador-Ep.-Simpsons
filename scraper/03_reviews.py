@@ -17,7 +17,7 @@ import pandas as pd
 import numpy as np
 import time
 
-def retoranar_votantes(url_votos, ep_name, ep_cod):
+def retoranar_votantes(url_votos, ep_name, ep_cod, puntaje):
 
     time.sleep(1)
     url = 'https://nohomers.net' + url_votos    
@@ -38,7 +38,8 @@ def retoranar_votantes(url_votos, ep_name, ep_cod):
                 'username': username,
                 'url_username': url_votante,
                 'episode_name': ep_name,
-                'episode_cod': ep_cod
+                'episode_cod': ep_cod,
+                'vote': puntaje
             }
             votos.append(datos_voto)          
 
@@ -49,7 +50,7 @@ def retoranar_votantes(url_votos, ep_name, ep_cod):
 
 # === Read Datast of Episodes Data ==== #
 
-episodes = pd.read_csv('02_episodes_data.csv', sep='|')
+episodes = pd.read_csv('scraper/02_episodes_data.csv', sep='|')
 #episodes = episodes.iloc[[1,30,50,100,200,220, 250, 300, 350, 400,600]] #para probar
 i_max = episodes.shape[0]
 
@@ -72,7 +73,7 @@ for idx,episode in episodes.iterrows():
     episode_cod = episode['episode_code']
     
         
-    print(f"{round(idx/i_max,2)}%: {episode_name}") 
+    print(f"{round(idx/i_max*100,2)}%: {episode_name}") 
     r=requests.get(episode['episode_link_nohomers'])    
     
     tree = lxml.html.fromstring(r.content)
@@ -101,7 +102,7 @@ for idx,episode in episodes.iterrows():
             if int(votos) > 0:                
                 try:
                     link_votos = puntaje.xpath('.//div[contains(@class, "pollResult-voters")]')[0].get('data-href')
-                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod)
+                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod, puntaje=5)
                     reviews = reviews + lista_votos   
                     episodes.loc[idx,'votes_details_fl'] = 1        
                 except:
@@ -117,7 +118,7 @@ for idx,episode in episodes.iterrows():
             if int(votos) > 0:
                 try:
                     link_votos = puntaje.xpath('.//div[contains(@class, "pollResult-voters")]')[0].get('data-href')
-                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod)
+                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod, puntaje=4)
                     reviews = reviews + lista_votos         
                     episodes.loc[idx,'votes_details_fl'] = 1                      
                 except:
@@ -133,7 +134,7 @@ for idx,episode in episodes.iterrows():
             if int(votos) > 0:
                 try:
                     link_votos = puntaje.xpath('.//div[contains(@class, "pollResult-voters")]')[0].get('data-href')
-                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod)
+                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod, puntaje=3)
                     reviews = reviews + lista_votos           
                     episodes.loc[idx,'votes_details_fl'] = 1
                 except:
@@ -150,7 +151,7 @@ for idx,episode in episodes.iterrows():
             if int(votos) > 0:
                 try:
                     link_votos = puntaje.xpath('.//div[contains(@class, "pollResult-voters")]')[0].get('data-href')
-                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod)
+                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod, puntaje=2)
                     reviews = reviews + lista_votos           
                     episodes.loc[idx,'votes_details_fl'] = 1
                 except:
@@ -166,7 +167,7 @@ for idx,episode in episodes.iterrows():
             if int(votos) > 0:                
                 try:
                     link_votos = puntaje.xpath('.//div[contains(@class, "pollResult-voters")]')[0].get('data-href')
-                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod)
+                    lista_votos = retoranar_votantes(link_votos, episode_name, episode_cod, puntaje=1)
                     reviews = reviews + lista_votos           
                     episodes.loc[idx,'votes_details_fl'] = 1
                 except:
@@ -182,5 +183,5 @@ for idx,episode in episodes.iterrows():
    
     
 reviews_df = pd.DataFrame(reviews)    
-reviews_df.to_csv("reviews.csv", index=False, sep='|')
-episodes.to_csv("03_episodes_data.csv", index=False, sep='|')   #guardamos el dataframe que tiene datos del episodio + puntaje y votaciones
+reviews_df.to_csv("scraper/reviews.csv", index=False, sep='|')
+#episodes.to_csv("scraper/03_episodes_data.csv", index=False, sep='|')   #guardamos el dataframe que tiene datos del episodio + puntaje y votaciones

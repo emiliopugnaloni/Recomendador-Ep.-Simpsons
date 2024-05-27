@@ -1,0 +1,73 @@
+<html>
+<head>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<title>Recomendaciones</title>
+</head>
+
+<body class="px-6 py-4">
+	<form method="POST" action="/interacciones/{{username}}">
+		<div class="grid grid-cols-3 gap-1 mb-4">
+			{% for episodio in episodios %}
+			<div class="border shadow-lg p-4 rounded flex flex-col">
+				<div class="flex">
+					<img src="{{ episodio.gallery_images.split('|')[0] }}" class="mr-4 w-40 h-40 border" id="image-{{ loop.index }}" data-images="{{ episodio.gallery_images }}" />
+					<div class="flex flex-col">
+						<h3 class="text-xl font-semibold mb-2">{{ episodio.episode_name|title }}</h3>
+						<small class="mb-2">Season: {{ episodio.episode_season|int }}</small>
+						<small class="mb-2">Airdate: {{ episodio.episode_airdate}}</small>
+						<small class="mb-2">Directors: {{ episodio.directed_by}}</small>
+					</div>
+				</div>
+				<div class="flex space-x-2 mt-2 ml-10">
+					<button type="button" class="px-1 py-1 bg-teal-500 text-white rounded text-sm" onclick="prevImage('{{ loop.index }}')">Prev</button>
+					<button type="button" class="px-1 py-1 bg-teal-500 text-white rounded text-sm" onclick="nextImage('{{ loop.index }}')">Next</button>
+				</div>				
+				<div class="mt-2">
+					{% if episodio.sinopsis %}
+					<p class="mb-2">{{ episodio.sinopsis|truncate }}</p>
+					{% endif %}
+				</div>
+				<div class="ml-auto text-sm flex space-x-4 mt-2">
+					{% for i in range(0, 6) %}
+					{% if i == 0 %}
+					<label class="cursor-pointer hidden">{{ i }} <input class="cursor-pointer" type="radio" name="{{episodio.episode_code}}" value="{{i}}" checked /></label>
+					{% else %}
+					<label class="cursor-pointer">{{ i }} <input class="cursor-pointer" type="radio" name="{{episodio.episode_code}}" value="{{i}}" /></label>
+					{% endif %}
+					{% endfor %}
+				</div>
+			</div>
+			{% endfor %}
+		</div>
+		<div class="flex justify-between">
+			<small> Usuario : {{ username }} - cant. valorados: {{ cant_valorados }} - cant. ignorados: {{ cant_ignorados}} - <a href="/reset/{{username}}" class="px-2 py-1 bg-teal-500 text-sm text-white rounded-xl">reset</a></small>
+			<button type="submit" class="border bg-teal-500 hover:bg-teal-700 text-white text-lg font-bold px-4 py-2 ml-auto">Más recomendaciones</button>
+		</div>
+	</form>
+
+	<script>
+		function updateImage(index, direction) {
+			const imgElement = document.getElementById(`image-${index}`);
+			const images = imgElement.getAttribute('data-images').split('|');
+			let currentSrc = imgElement.src;
+			let currentIndex = images.indexOf(currentSrc);
+
+			if (direction === 'next') {
+				currentIndex = (currentIndex + 1) % images.length;
+			} else if (direction === 'prev') {
+				currentIndex = (currentIndex - 1 + images.length) % images.length;
+			}
+
+			imgElement.src = images[currentIndex];
+		}
+
+		function nextImage(index) {
+			updateImage(index, 'next');
+		}
+
+		function prevImage(index) {
+			updateImage(index, 'prev');
+		}
+	</script>
+</body>
+</html>

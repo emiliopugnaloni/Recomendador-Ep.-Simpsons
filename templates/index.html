@@ -1,0 +1,23 @@
+<html>
+	<!-- El index es para hacer el login. Y obtener los datos del usuario-->
+	<head>
+		<script src="https://cdn.tailwindcss.com"></script> <!-- Tailwind CSS is a popular utility-first CSS framework for building custom user interfaces. It provides a set of pre-designed utility classes that you can use to quickly style your HTML elements without having to write custom CSS. These utility classes cover a wide range of styling needs, from layout and spacing to typography and colors.-->
+		<title>Ingreso</title>
+	</head>
+
+	<body class="px-12 py-4">
+		<form method="POST" action="/login" class="w-96 border shadow-xl mx-auto mt-7 p-4">
+			<h2 class="mb-4 text-xl font-bold">Entrar al sistema</h2>
+			<div class="flex mb-4">
+				<label>
+					Usuario:
+					<input type="text" name="username" minlength="3" maxlength="30" required class="p-1 border rounded" />
+				</label>
+			</div>
+
+			<div class="flex justify-end">
+				<button type="submit" class="border bg-teal-500 hover:bg-teal-700 text-white text-lg font-bold px-4 py-2 ml-auto">Entrar</button>
+			</div>
+		</form>
+	</body>
+</html>
