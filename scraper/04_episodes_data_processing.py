@@ -70,6 +70,17 @@ for character, character_column in zip(characters,character_columns) :
     episodes[character_column] = episodes.characters.apply(lambda x: int(character in x))
 
 
+# ==== Personajes en Sinopsis ==== #
+
+episodes.sinopsis.fillna('', inplace=True)
+
+episodes['sinopsis_homer'] = episodes.sinopsis.str.lower().str.contains('homer').astype(int)
+episodes['sinopsis_bart'] = episodes.sinopsis.str.lower().str.contains('bart').astype(int)
+episodes['sinopsis_lisa'] = episodes.sinopsis.str.lower().str.contains('lisa').astype(int)
+episodes['sinopsis_marge'] = episodes.sinopsis.str.lower().str.contains('marge').astype(int)
+
+episodes[['sinopsis_homer', 'sinopsis_bart', 'sinopsis_lisa', 'sinopsis_marge']].value_counts().sort_index()
+
 # === Temporadas === #
 #Create dummies for cutpoints 0,5,10,15,20,25,30,35
 #episodes['season'] =
@@ -90,6 +101,7 @@ episodes.rename(columns={'episode_name_wikisimpsons': 'episode_name'}, inplace=T
 print(episodes.shape)
 episodes.head()
 episodes.columns.values
+episodes.sinopsis_bart.value_counts(dropna=False)
 
 # === Guardamos Dataset === #
 episodes.to_csv("scraper/episodes.csv", index=False, sep='|')  
