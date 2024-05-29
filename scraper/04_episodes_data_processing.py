@@ -81,9 +81,9 @@ episodes['sinopsis_marge'] = episodes.sinopsis.str.lower().str.contains('marge')
 
 episodes[['sinopsis_homer', 'sinopsis_bart', 'sinopsis_lisa', 'sinopsis_marge']].value_counts().sort_index()
 
+
 # === Temporadas === #
 #Create dummies for cutpoints 0,5,10,15,20,25,30,35
-#episodes['season'] =
 episodes['season_bin'] = pd.cut(episodes['episode_season'], bins=[0,5,10,15,20,25,30,35], labels=['0_4', '5_9', '10_14', '15_19', '20_24', '25_29', '30_35'], right=False)
 episodes = pd.get_dummies(episodes, columns=['season_bin'], drop_first=False, dtype='int')
 episodes['season_bin'] = pd.cut(episodes['episode_season'], bins=[0,5,10,15,20,25,30,35], labels=['0_4', '5_9', '10_14', '15_19', '20_24', '25_29', '30_35'], right=False)
