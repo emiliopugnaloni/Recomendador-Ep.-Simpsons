@@ -34,39 +34,42 @@ episodes['rating'] = round((episodes['1/5_votes'] + 2*episodes['2/5_votes'] + 3*
 # === Directores === #
 
 # Contamos la cantidad de directores. Nos quedamos con quienes aparecen mas de 10 veces
-directors_occurences = episodes.directed_by.str.split('|').explode().value_counts()
+directors_occurences = episodes.directed_by.str.split('|').explode().str.strip().value_counts()
 directors = directors_occurences[directors_occurences > 10].index.values
-directors = ['dir_' + director.strip().replace(' ', '_') for director in directors]
+director_columns = ['dir_' + director.strip().replace(' ', '_') for director in directors]
 
 # Agregamos variables dummies si el director parece en el episodio
-for director in directors:
-    episodes[director] = episodes.directed_by.apply(lambda x: int(director in x))
+for director, director_column in zip(directors,director_columns):
+    episodes[director_column] = episodes.directed_by.apply(lambda x: int(director in x))
     
  # === Escritores === #   
 
 # Contamos la cantidad de escritores. Nos quedamos con quienres aparecen mas de 10 veces
-writters_occurences = episodes.written_by.str.split('|').explode().value_counts()
+writters_occurences = episodes.written_by.str.split('|').explode().str.strip().value_counts()
 writters = writters_occurences[writters_occurences > 10].index.values
-writters = ['wrt_'+ writter.strip().replace(' ', '_') for writter in writters]
+writter_columns = ['wrt_'+ writter.strip().replace(' ', '_') for writter in writters]
 
 # Agregamos variables dummies si el escritor aparece en el episodio
-for writter in writters:
-    episodes[writter] = episodes.written_by.apply(lambda x: int(writter in x))
+for writter, writter_column in zip(writters,writter_columns) :
+    episodes[writter_column] = episodes.written_by.apply(lambda x: int(writter in x))
 
 
 # === Personajes === #
 
 # Contamos la cantidad de personajes. Nos quedamos con quienres aparecen mas de 10 veces
-characters_occurences = episodes.characters.str.split('|').explode().value_counts()
+characters_occurences = episodes.characters.str.split('|').explode().str.strip().value_counts()
 characters = characters_occurences[characters_occurences > 20].index.values
-characters = ['chr_' + characters.strip().replace(' ', '_') for characters in characters]
+character_columns = ['chr_' + character.strip().replace(' ', '_') for character in characters]
+
+episodes.characters = episodes.characters.fillna('')
+
 
 # Agregamos variables dummies si el personaje aparece en el episodio
-for character in characters:
-    episodes[character] = episodes.directed_by.apply(lambda x: int(character in x))
+for character, character_column in zip(characters,character_columns) :
+    #print(character, character_column)
+    episodes[character_column] = episodes.characters.apply(lambda x: int(character in x))
 
-episodes.columns
-   
+
 # === Temporadas === #
 #Create dummies for cutpoints 0,5,10,15,20,25,30,35
 #episodes['season'] =
@@ -86,6 +89,7 @@ episodes.drop(['characters'], axis=1, inplace=True) #usadas para dummies
 episodes.rename(columns={'episode_name_wikisimpsons': 'episode_name'}, inplace=True)
 print(episodes.shape)
 episodes.head()
+episodes.columns.values
 
 # === Guardamos Dataset === #
 episodes.to_csv("scraper/episodes.csv", index=False, sep='|')  
