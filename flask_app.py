@@ -21,11 +21,11 @@ def login():
 
 @app.route("/recomendaciones/<username>", methods=["GET"])
 def recomendaciones(username):  
-    episodios = recomendar.recomendar(username)
+    episodios, algoritmo = recomendar.recomendar(username)
     cant_valorados = len(recomendar.valorados(username))
     cant_ignorados = len(recomendar.ignorados(username))
 
-    return render_template("recomendaciones.html", episodios=episodios, username=username, cant_valorados=cant_valorados, cant_ignorados=cant_ignorados)
+    return render_template("recomendaciones.html", episodios=episodios, username=username, cant_valorados=cant_valorados, cant_ignorados=cant_ignorados, algoritmo=algoritmo)
 
 @app.route("/interacciones/<username>", methods=["POST"])
 def interacciones(username):
