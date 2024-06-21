@@ -1,6 +1,7 @@
 import os
 import sqlite3
 import pandas as pd
+import surprise as sp
 
 THIS_FOLDER = os.path.dirname(os.path.abspath(__file__))
 
@@ -37,7 +38,6 @@ def crear_usuario(username):
 
 def datos_episodios(id_episodios):
     query = f"SELECT DISTINCT * FROM episodes WHERE episode_code IN ({','.join(['?']*len(id_episodios))})"
-    print(query)
     episodios = sql_select(query, id_episodios)
     return episodios
 
@@ -58,10 +58,9 @@ def recomendar(username):
     else:
         id_episodios = recomendar_perfil(username)
         algoritmo = "perfil"   
-    # elif cant_valorados <= 10: ## 10 es número mágico
-    #     id_libros = recomendar_contenido(id_lector)
     # else:
-    #     id_libros = recomendar_perfil(id_lector)
+    #     id_episodios = recomendar_personalizada(username)
+    #     algoritmo = "personalizada"
 
     print(id_episodios)
     recomendaciones = datos_episodios(id_episodios)
@@ -72,9 +71,12 @@ def recomendar(username):
 ##
 def recomendar_top_9(username):
     query = f"""
-        SELECT episode_code, AVG(vote) as rating, SUM(CASE WHEN vote>=4 THEN 1 ELSE 0 END) AS q_pos_reviews
+        SELECT episode_code, 
+            AVG(vote) as rating, 
+            SUM(CASE WHEN vote>=4 THEN 1 ELSE 0 END) AS q_pos_reviews
         FROM reviews
         WHERE episode_code NOT IN (SELECT episode_code FROM reviews WHERE username = ?)
+            AND vote>0
         GROUP BY 1
         ORDER BY 3 DESC, 2 DESC
         LIMIT 9
@@ -96,7 +98,9 @@ def recomendar_perfil(username):
         SELECT a.username,  vote-2 as ponderador,   b.*
         FROM reviews AS a
         JOIN episodes b ON a.episode_code = b.episode_code
-        WHERE a.username = ?  """, con, params=(username,))  
+        WHERE a.username = ?  
+            AND vote>0
+        """, con, params=(username,))  
     
     df_user = df_user[['ponderador'] + columns_for_profile]
     df_user = df_user.loc[:, df_user.columns != 'ponderador'].mul(df_user['ponderador'], axis=0).sum().transpose()
@@ -106,6 +110,7 @@ def recomendar_perfil(username):
         SELECT episode_code, AVG(vote) as rating, SUM(CASE WHEN vote>=4 THEN 1 ELSE 0 END) AS q_pos_reviews
         FROM reviews
         WHERE episode_code NOT IN (SELECT episode_code FROM reviews WHERE username = ?)
+            AND vote>0
         GROUP BY 1
         ORDER BY 3 DESC, 2 DESC""", con, params=(username,)).set_index('episode_code')
     con.close()
@@ -121,5 +126,51 @@ def recomendar_perfil(username):
     return df_recomendacion.index.unique()[:9].values
 
 
-def recomendar_contenido(id_lector):
+def recomendar_personalizada(username):
+ 
+    # Creamos algoritmo SVD 
+    con = sqlite3.connect(os.path.join(THIS_FOLDER, "datos/data.db"))        
+    df_ratings = pd.read_sql_query(f"SELECT * FROM ratings WHERE vote>0", con).set_index('episode_code')   
+
+    reader = sp.reader.Reader(rating_scale=(1, 5))
+    df_ratings = sp.dataset.Dataset.load_from_df(df_ratings[['username', 'episode_code', 'vote']], reader)
+    trainset = df_ratings.build_full_trainset()
+
+    algo = sp.SVD(n_factors= 30, n_epochs= 70, reg_all= 0.1, random_state=42)
+    algo.fit(trainset)
+    
+    # Obtenemos los ya vistos
+    query_already_seen = "SELECT episode_code FROM reviews WHERE username = ?"
+    tmp = pd.read_sql_query(query_already_seen, con, params=(username,))
+    already_seen = tmp.episode_code.unique()
+    
+    # Obtenemos la lista de episodios
+    tmp = pd.read_sql_query("SELECT episode_code FROM episodes", con)
+    list_episodes = tmp.episode_code.unique() 
+    
+    # Obtenemos las predicciones para cada episiodio
+    df_pred = []
+    dict_pred = {}   
+    
+    for iid in list_episodes:
+        if iid not in already_seen:
+            pred = algo.predict(username, iid)
+            dict_pred = {'ep_code': iid, 'rating_pred': pred.est}
+            df_pred.append(dict_pred)
+
+    df_pred = pd.DataFrame(df_pred)
+    df_pred = df_pred.sort_values('rating_pred', ascending=False)
+    recomendations = df_pred.ep_code.unique()[:9]
+
+    return recomendations
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     return []

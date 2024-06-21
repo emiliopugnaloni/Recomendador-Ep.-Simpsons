@@ -2,7 +2,7 @@ import sqlite3
 import pandas as pd
 
 # Database
-conn = sqlite3.connect('datos/data.db')
+conn = sqlite3.connect('scraper/data.db')
 
 # Reviews Table
 reviews = pd.read_csv('scraper/reviews.csv', sep='|')
@@ -24,7 +24,7 @@ conn.commit()
 conn.close()
 
 # Read SQLite database
-conn = sqlite3.connect('datos/data.db')
+conn = sqlite3.connect('scraper/data.db')
 pd.read_sql_query('SELECT * FROM episodes LIMIT 10', conn).columns
 
 
