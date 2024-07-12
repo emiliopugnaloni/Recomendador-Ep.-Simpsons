@@ -1,7 +1,7 @@
 **Web del Recomendador**: epugna.pythonanywhere.com
 
 **Validacion Algoritmos**:
-https://colab.research.google.com/drive/1R0DkzqHi4wCCFdlR9hsf_Qrx8Fwix1DN#scrollTo=yhebarRsBTSi
+[https://colab.research.google.com/drive/1R0DkzqHi4wCCFdlR9hsf_Qrx8Fwix1DN#scrollTo=yhebarRsBTSi](https://colab.research.google.com/drive/1R0DkzqHi4wCCFdlR9hsf_Qrx8Fwix1DN?usp=sharing)
 
 Para la validación se uso la métrica de NDCG, a partir de dividir las interacciones en 80/20. Se probaron diferentes algoritmos entrenando en train  (en varios se hizo una validacion-cruzada para elegir los mejores hiperparametros) y luego prediciendo en test. El NDCG se calculo para cada usuario usando las primeras 9 recomendaciones de cada algoritmo (ignorando los episodios de cada usuario que ya aparecían en train) y comparándolo con los episodios que le gustaron a cada usuario (rating>=4/5) en la base de test.
 
